@@ -9,27 +9,28 @@ import (
 	"strings"
 )
 
-type domain struct {
-	domain string
-	mx     bool
-	spf    string
-	dmarc  string
-}
-
-func init() {
-
-}
+const (
+	Reset  = "\033[0m"
+	Red    = "\033[31m"
+	Green  = "\033[32m"
+	Yellow = "\033[33m"
+	Blue   = "\033[34m"
+	Purple = "\033[35m"
+	Cyan   = "\033[36m"
+)
 
 func main() {
-	scanner := bufio.NewScanner(os.Stdin)
-	fmt.Printf("domain, hasMX, hasSPF, sprRecord, hasDMARC, dmarcRecord\n")
-
-	for scanner.Scan() {
-		checkDomain(scanner.Text())
-	}
-
-	if err := scanner.Err(); err != nil {
-		log.Fatalf("error: could not read from input: %v", err)
+	for {
+		scanner := bufio.NewScanner(os.Stdin)
+		scanner.Scan()
+		domains := strings.Split(scanner.Text(), " ")
+		for _, v := range domains {
+			checkDomain(v)
+			fmt.Println()
+		}
+		if err := scanner.Err(); err != nil {
+			log.Fatalf("error: could not read from input: %v", err)
+		}
 	}
 }
 
@@ -66,11 +67,11 @@ func checkDomain(domain string) {
 			break
 		}
 	}
-	fmt.Printf("%v, %v, %v, %v, %v, %v", domain, hasMX, hasSPF, spfRecord, hasDMARC, dmarcRecord)
-}
-
-func MassCheckDomain(domains []string) {
-	for _, v := range domains {
-		checkDomain(v)
-	}
+	fmt.Printf("%sDomain%s: %s\n%sHas MX%s: %v\n%sHas SPF%s: %v\n%sSPF Record%s: %s\n%sHas DMARC%s: %v\n%sDMARC Record%s: %s\n",
+		Blue, Reset, domain,
+		Green, Reset, hasMX,
+		Yellow, Reset, hasSPF,
+		Yellow, Reset, spfRecord,
+		Purple, Reset, hasDMARC,
+		Purple, Reset, dmarcRecord)
 }
