@@ -9,6 +9,17 @@ import (
 	"strings"
 )
 
+type domain struct {
+	domain string
+	mx     bool
+	spf    string
+	dmarc  string
+}
+
+func init() {
+
+}
+
 func main() {
 	scanner := bufio.NewScanner(os.Stdin)
 	fmt.Printf("domain, hasMX, hasSPF, sprRecord, hasDMARC, dmarcRecord\n")
@@ -56,4 +67,10 @@ func checkDomain(domain string) {
 		}
 	}
 	fmt.Printf("%v, %v, %v, %v, %v, %v", domain, hasMX, hasSPF, spfRecord, hasDMARC, dmarcRecord)
+}
+
+func MassCheckDomain(domains []string) {
+	for _, v := range domains {
+		checkDomain(v)
+	}
 }
