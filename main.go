@@ -24,7 +24,8 @@ func main() {
 	if val, ok := os.LookupEnv("FUNCTIONS_CUSTOMHANDLER_PORT"); ok {
 		listenaddr = ":" + val
 	}
-	http.HandleFunc("/checkdomain", checkDomain)
+	http.HandleFunc("/api/check_email", checkDomain)
+
 	log.Printf("%sListening On:%s http://127.0.0.1%s", Red, Reset, listenaddr)
 	log.Fatal(http.ListenAndServe(listenaddr, nil))
 }
@@ -33,6 +34,10 @@ func checkDomain(w http.ResponseWriter, r *http.Request) {
 	var hasMX, hasSPF, hasDMARC bool
 	var spfRecord, dmarcRecord string
 	domain := r.URL.Query().Get("domain")
+	if domain == "" {
+		http.Error(w, "Domain is required", http.StatusBadRequest)
+		return
+	}
 	mxRecords, err := net.LookupMX(domain)
 	if err != nil {
 		log.Printf("Error: %v\n", err)
