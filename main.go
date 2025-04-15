@@ -5,6 +5,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"os"
 	"strings"
 )
 
@@ -20,6 +21,9 @@ const (
 
 func main() {
 	listenaddr := ":8080"
+	if val, ok := os.LookupEnv("FUNCTIONS_CUSTOMHANDLER_PORT"); ok {
+		listenaddr = ":" + val
+	}
 	http.HandleFunc("/checkdomain", checkDomain)
 	log.Printf("%sListening On:%s http://127.0.0.1%s", Red, Reset, listenaddr)
 	log.Fatal(http.ListenAndServe(listenaddr, nil))
