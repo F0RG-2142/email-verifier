@@ -1,11 +1,10 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
 	"log"
 	"net"
-	"os"
+	"net/http"
 	"strings"
 )
 
@@ -20,24 +19,16 @@ const (
 )
 
 func main() {
-	for {
-		scanner := bufio.NewScanner(os.Stdin)
-		scanner.Scan()
-		domains := strings.Split(scanner.Text(), " ")
-		for _, v := range domains {
-			checkDomain(v)
-			fmt.Println()
-		}
-		if err := scanner.Err(); err != nil {
-			log.Fatalf("error: could not read from input: %v", err)
-		}
-	}
+	listenaddr := ":8080"
+	http.HandleFunc("/checkdomain", checkDomain)
+	log.Printf("%sListening On:%s http://127.0.0.1%s", Red, Reset, listenaddr)
+	log.Fatal(http.ListenAndServe(listenaddr, nil))
 }
 
-func checkDomain(domain string) {
+func checkDomain(w http.ResponseWriter, r *http.Request) {
 	var hasMX, hasSPF, hasDMARC bool
 	var spfRecord, dmarcRecord string
-
+	domain := r.URL.Query().Get("domain")
 	mxRecords, err := net.LookupMX(domain)
 	if err != nil {
 		log.Printf("Error: %v\n", err)
@@ -67,11 +58,7 @@ func checkDomain(domain string) {
 			break
 		}
 	}
-	fmt.Printf("%sDomain%s: %s\n%sHas MX%s: %v\n%sHas SPF%s: %v\n%sSPF Record%s: %s\n%sHas DMARC%s: %v\n%sDMARC Record%s: %s\n",
-		Blue, Reset, domain,
-		Green, Reset, hasMX,
-		Yellow, Reset, hasSPF,
-		Yellow, Reset, spfRecord,
-		Purple, Reset, hasDMARC,
-		Purple, Reset, dmarcRecord)
+	message := fmt.Sprintf("Domain: %s\nHas MX: %v\nHas SPF: %v\nSPF Record: %s\nHas DMARC: %v\nDMARC Record: %s\n",
+		domain, hasMX, hasSPF, spfRecord, hasDMARC, dmarcRecord)
+	fmt.Fprint(w, message)
 }
